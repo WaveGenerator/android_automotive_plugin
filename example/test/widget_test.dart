@@ -1,14 +1,24 @@
 import 'package:android_automotive_plugin_example/model.dart';
 import 'package:android_automotive_plugin_example/new/mock_adapter.dart';
 import 'package:android_automotive_plugin_example/new/seat_manager.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('SeatManager Tests', () {
     late MockAutomotiveAdapter mockAdapter;
     late SeatManager seatManager;
 
     setUp(() {
+      const MethodChannel('android_automotive_plugin')
+          .setMockMethodCallHandler((MethodCall methodCall) async {
+        if (methodCall.method == 'connect') {
+          return null;
+        }
+        return null;
+      });
+
       mockAdapter = MockAutomotiveAdapter();
 
       final driverSettings = SeatSettings(
@@ -31,6 +41,10 @@ void main() {
         passengerSettings: passengerSettings,
       );
     });
+    
+    tearDown(() {
+      const MethodChannel('android_automotive_plugin').setMockMethodCallHandler(null);
+    });
 
     test('Initial state should be correct', () async {
       expect(await mockAdapter.getIgnitionOn(), isFalse);
@@ -50,7 +64,7 @@ void main() {
       mockAdapter.simulateIgnitionChange(true);
 
       await Future.delayed(
-          Duration(milliseconds: 100)); // Ожидаем обновления состояния
+          const Duration(milliseconds: 100)); // Ожидаем обновления состояния
 
       expect(mockAdapter.onSeatHeatChange, isNotNull);
       mockAdapter.onSeatHeatChange = (isDriver, heatLevel) {
@@ -65,7 +79,7 @@ void main() {
       mockAdapter.simulateIgnitionChange(true);
 
       await Future.delayed(
-          Duration(milliseconds: 100)); // Ожидаем обновления состояния
+          const Duration(milliseconds: 100)); // Ожидаем обновления состояния
 
       mockAdapter.onSeatVentilationChange = (isDriver, ventilationLevel) {
         if (!isDriver) {
@@ -80,7 +94,7 @@ void main() {
 
       mockAdapter.simulateIgnitionChange(false);
 
-      await Future.delayed(Duration(milliseconds: 100)); // Ожидаем сброса
+      await Future.delayed(const Duration(milliseconds: 100)); // Ожидаем сброса
 
       mockAdapter.onSeatHeatChange = (isDriver, heatLevel) {
         expect(heatLevel, equals(0));
@@ -95,12 +109,12 @@ void main() {
       mockAdapter.simulateIgnitionChange(true);
       mockAdapter.simulateTemperatureChange(10.0);
 
-      await Future.delayed(Duration(milliseconds: 100)); // Ожидаем включения
+      await Future.delayed(const Duration(milliseconds: 100)); // Ожидаем включения
 
       mockAdapter.simulateSeatHeatChange(true, 2);
 
-      await Future.delayed(
-          Duration(milliseconds: 100)); // Ожидаем обработки внешнего изменения
+      await Future.delayed(const Duration(
+          milliseconds: 100)); // Ожидаем обработки внешнего изменения
 
       mockAdapter.onSeatHeatChange = (isDriver, heatLevel) {
         if (isDriver) {
