@@ -1,3 +1,3 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Initial release of the `changan_car_flutter_library`. This library allows for the management of HVAC, sensors, and other features for Changan vehicles (tested on UNI-K).
